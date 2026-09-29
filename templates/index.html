@@ -1,0 +1,363 @@
+{% set ECG = "M0 60 L36 60 L46 50 L56 60 L78 60 L88 68 L98 8 L110 108 L120 60 L146 60 L164 42 L182 60 L200 60 L236 60 L246 50 L256 60 L278 60 L288 68 L298 8 L310 108 L320 60 L346 60 L364 42 L382 60 L400 60 L436 60 L446 50 L456 60 L478 60 L488 68 L498 8 L510 108 L520 60 L546 60 L564 42 L582 60 L600 60 L636 60 L646 50 L656 60 L678 60 L688 68 L698 8 L710 108 L720 60 L746 60 L764 42 L782 60 L800 60 L836 60 L846 50 L856 60 L878 60 L888 68 L898 8 L910 108 L920 60 L946 60 L964 42 L982 60 L1000 60 L1036 60 L1046 50 L1056 60 L1078 60 L1088 68 L1098 8 L1110 108 L1120 60 L1146 60 L1164 42 L1182 60 L1200 60" %}
+{% set BEAT = "M0 60 L36 60 L46 50 L56 60 L78 60 L88 68 L98 8 L110 108 L120 60 L146 60 L164 42 L182 60 L200 60" %}
+{% set HEART = "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Heartline: heart disease risk check</title>
+  <meta name="description" content="Answer 11 questions from your latest check-up and see how patients with similar answers turned out. An educational machine-learning project.">
+  <meta name="theme-color" content="#FFF8F6">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <link rel="preload" href="{{ url_for('static', filename='fonts/young-serif-latin-400-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <a class="skip" href="#check">Skip to the check</a>
+
+  <header class="site-header">
+    <div class="wrap site-header__inner">
+      <a class="brand" href="#top" aria-label="Heartline home">
+        <svg class="brand__mark" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="{{ HEART }}" fill="currentColor"/>
+          <path d="M4.5 12.4h4l1.6-3.4 2.4 6 1.6-2.6h5.4" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Heartline</span>
+      </a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="#how">How it works</a>
+        <a href="#habits">Healthy habits</a>
+        <a href="#model">The model</a>
+      </nav>
+      <a class="btn btn--small" href="#check">Check my risk</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- ───────────── Hero ───────────── -->
+    <section class="hero">
+      <div class="wrap hero__inner">
+        <div class="hero__copy">
+          <h1>Check your heart disease risk in two minutes</h1>
+          <p class="lead">Answer {{ info.features }} questions from your latest check-up. We compare you with {{ info.records }} real patient records and show how people with similar answers turned out.</p>
+          <div class="hero__actions">
+            <a class="btn btn--primary" href="#check">Start the check</a>
+            <a class="text-link" href="#how">See how it works</a>
+          </div>
+          <p class="fine">Takes about two minutes. Your answers are never saved.</p>
+        </div>
+
+        <div class="hero__art">
+          <span class="pulse pulse--a" aria-hidden="true"></span>
+          <span class="pulse pulse--b" aria-hidden="true"></span>
+          <img class="hero__heart" src="{{ url_for('static', filename='img/heart-watercolor.webp') }}" width="363" height="550" alt="Watercolour illustration of a human heart">
+        </div>
+      </div>
+
+      <svg class="hero__ecg" viewBox="0 0 1200 120" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <path class="hero__ecg-ghost" d="{{ ECG }}"/>
+        <path class="hero__ecg-line" pathLength="1" d="{{ ECG }}"/>
+      </svg>
+    </section>
+
+    <!-- ───────────── How it works ───────────── -->
+    <section class="how" id="how">
+      <div class="wrap">
+        <h2 class="section-title">How the check works</h2>
+        <ol class="how__list">
+          <li>
+            <span class="how__num" aria-hidden="true">1</span>
+            <h3>Answer {{ info.features }} questions</h3>
+            <p>Age, blood pressure, cholesterol, and a few results from a resting ECG and an exercise test. Your latest check-up report has most of them.</p>
+          </li>
+          <li>
+            <span class="how__num" aria-hidden="true">2</span>
+            <h3>We find your {{ info.neighbors }} closest matches</h3>
+            <p>The model looks through {{ info.records }} patient records and picks the {{ info.neighbors }} whose answers are most like yours.</p>
+          </li>
+          <li>
+            <span class="how__num" aria-hidden="true">3</span>
+            <h3>See how they turned out</h3>
+            <p>You get the number of matches who had heart disease, and how patients did who answered like you on each question.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ───────────── The check ───────────── -->
+    <section class="check" id="check">
+      <div class="wrap">
+        <h2 class="section-title">Your check-up details</h2>
+        <p class="section-sub">Three short steps. Every answer changes the result, so use the numbers from your report where you can.</p>
+
+        <noscript><p class="notice">This check needs JavaScript. Please turn it on and reload the page.</p></noscript>
+
+        <div class="sheet" id="sheet">
+          <aside class="rail" aria-label="Progress">
+           <div class="rail__inner">
+            <ol class="rail__steps" id="rail-steps">
+              <li class="rail__step is-current" data-step="1"><span class="rail__dot" aria-hidden="true"></span><span class="rail__name">About you</span></li>
+              <li class="rail__step" data-step="2"><span class="rail__dot" aria-hidden="true"></span><span class="rail__name">Symptoms and blood tests</span></li>
+              <li class="rail__step" data-step="3"><span class="rail__dot" aria-hidden="true"></span><span class="rail__name">Exercise test</span></li>
+            </ol>
+            <dl class="rail__summary" aria-label="Your answers so far">
+              <div><dt>Age</dt><dd data-sum="Age"></dd></div>
+              <div><dt>Sex</dt><dd data-sum="Sex"></dd></div>
+              <div><dt>Chest pain</dt><dd data-sum="ChestPainType"></dd></div>
+              <div><dt>Blood pressure</dt><dd data-sum="RestingBP"></dd></div>
+              <div><dt>Cholesterol</dt><dd data-sum="Cholesterol"></dd></div>
+              <div><dt>Blood sugar</dt><dd data-sum="FastingBS"></dd></div>
+              <div><dt>Resting ECG</dt><dd data-sum="RestingECG"></dd></div>
+              <div><dt>Max heart rate</dt><dd data-sum="MaxHR"></dd></div>
+              <div><dt>Exercise pain</dt><dd data-sum="ExerciseAngina"></dd></div>
+              <div><dt>ST depression</dt><dd data-sum="Oldpeak"></dd></div>
+              <div><dt>ST slope</dt><dd data-sum="ST_Slope"></dd></div>
+            </dl>
+           </div>
+          </aside>
+
+          <div class="sheet__main">
+            <form id="risk-form" novalidate>
+              <!-- Step 1 -->
+              <fieldset class="step" data-step="1">
+                <legend class="step__title" tabindex="-1">About you</legend>
+                <p class="step__intro">Two quick basics.</p>
+
+                <div class="field" data-field="Age">
+                  <label class="field__label" for="Age">Age</label>
+                  <div class="range">
+                    <input class="range__slider" type="range" min="18" max="90" step="1" value="45" data-pair="Age" aria-label="Age slider">
+                    <span class="range__box"><input id="Age" name="Age" type="number" min="18" max="100" step="1" value="45" inputmode="numeric"><span class="range__unit">years</span></span>
+                  </div>
+                  <p class="field__error" role="alert"></p>
+                </div>
+
+                <fieldset class="field" data-field="Sex">
+                  <legend class="field__label">Sex</legend>
+                  <div class="choices choices--2">
+                    <label class="choice"><input type="radio" name="Sex" value="M"><span class="choice__body"><span class="choice__name">Male</span></span></label>
+                    <label class="choice"><input type="radio" name="Sex" value="F"><span class="choice__body"><span class="choice__name">Female</span></span></label>
+                  </div>
+                  <p class="field__error" role="alert"></p>
+                </fieldset>
+              </fieldset>
+
+              <!-- Step 2 -->
+              <fieldset class="step" data-step="2" hidden>
+                <legend class="step__title" tabindex="-1">Symptoms and blood tests</legend>
+                <p class="step__intro">Most of these are on your latest check-up report.</p>
+
+                <fieldset class="field" data-field="ChestPainType">
+                  <legend class="field__label">Which best describes your chest pain?</legend>
+                  <div class="choices choices--2 choices--long">
+                    <label class="choice"><input type="radio" name="ChestPainType" value="TA"><span class="choice__body"><span class="choice__name">Typical angina</span><span class="choice__desc">Pressure or tightness brought on by effort or stress, eased by rest.</span></span></label>
+                    <label class="choice"><input type="radio" name="ChestPainType" value="ATA"><span class="choice__body"><span class="choice__name">Atypical angina</span><span class="choice__desc">Chest discomfort that doesn't follow the classic pattern.</span></span></label>
+                    <label class="choice"><input type="radio" name="ChestPainType" value="NAP"><span class="choice__body"><span class="choice__name">Non-anginal pain</span><span class="choice__desc">Chest pain that doesn't look like it comes from the heart.</span></span></label>
+                    <label class="choice"><input type="radio" name="ChestPainType" value="ASY"><span class="choice__body"><span class="choice__name">No chest pain</span><span class="choice__desc">Asymptomatic: no chest pain symptoms.</span></span></label>
+                  </div>
+                  <p class="field__error" role="alert"></p>
+                </fieldset>
+
+                <div class="field" data-field="RestingBP">
+                  <label class="field__label" for="RestingBP">Resting blood pressure</label>
+                  <p class="field__hint">The top (systolic) number.</p>
+                  <div class="range">
+                    <input class="range__slider" type="range" min="80" max="200" step="1" value="120" data-pair="RestingBP" aria-label="Resting blood pressure slider">
+                    <span class="range__box"><input id="RestingBP" name="RestingBP" type="number" min="70" max="250" step="1" value="120" inputmode="numeric"><span class="range__unit">mm Hg</span></span>
+                  </div>
+                  <p class="field__error" role="alert"></p>
+                </div>
+
+                <div class="field" data-field="Cholesterol">
+                  <label class="field__label" for="Cholesterol">Cholesterol</label>
+                  <p class="field__hint">Total serum cholesterol from a blood test.</p>
+                  <div class="range" id="chol-range">
+                    <input class="range__slider" type="range" min="100" max="500" step="1" value="200" data-pair="Cholesterol" aria-label="Cholesterol slider">
+                    <span class="range__box"><input id="Cholesterol" name="Cholesterol" type="number" min="80" max="700" step="1" value="200" inputmode="numeric"><span class="range__unit">mg/dL</span></span>
+                  </div>
+                  <label class="check-line"><input type="checkbox" id="chol-unknown"><span>I don't know my cholesterol</span></label>
+                  <p class="field__error" role="alert"></p>
+                </div>
+
+                <fieldset class="field" data-field="FastingBS">
+                  <legend class="field__label">Fasting blood sugar above 120 mg/dL?</legend>
+                  <p class="field__hint">From a blood test taken after not eating overnight.</p>
+                  <div class="choices choices--2">
+                    <label class="choice"><input type="radio" name="FastingBS" value="1"><span class="choice__body"><span class="choice__name">Yes</span></span></label>
+                    <label class="choice"><input type="radio" name="FastingBS" value="0"><span class="choice__body"><span class="choice__name">No</span></span></label>
+                  </div>
+                  <p class="field__error" role="alert"></p>
+                </fieldset>
+
+                <fieldset class="field" data-field="RestingECG">
+                  <legend class="field__label">Resting ECG result</legend>
+                  <p class="field__hint">From an electrocardiogram taken while you were at rest.</p>
+                  <div class="choices choices--3">
+                    <label class="choice"><input type="radio" name="RestingECG" value="Normal"><span class="choice__body"><span class="choice__name">Normal</span></span></label>
+                    <label class="choice"><input type="radio" name="RestingECG" value="ST"><span class="choice__body"><span class="choice__name">ST-T wave abnormality</span></span></label>
+                    <label class="choice"><input type="radio" name="RestingECG" value="LVH"><span class="choice__body"><span class="choice__name">Left ventricular hypertrophy</span></span></label>
+                  </div>
+                  <p class="field__error" role="alert"></p>
+                </fieldset>
+              </fieldset>
+
+              <!-- Step 3 -->
+              <fieldset class="step" data-step="3" hidden>
+                <legend class="step__title" tabindex="-1">Exercise test</legend>
+                <p class="step__intro">These come from an exercise (stress) test report. Without one, the result will be less reliable.</p>
+
+                <div class="field" data-field="MaxHR">
+                  <label class="field__label" for="MaxHR">Maximum heart rate</label>
+                  <p class="field__hint">The highest rate reached during the test.</p>
+                  <div class="range">
+                    <input class="range__slider" type="range" min="60" max="220" step="1" value="150" data-pair="MaxHR" aria-label="Maximum heart rate slider">
+                    <span class="range__box"><input id="MaxHR" name="MaxHR" type="number" min="60" max="220" step="1" value="150" inputmode="numeric"><span class="range__unit">bpm</span></span>
+                  </div>
+                  <div class="bpm" aria-hidden="true">
+                    <svg class="bpm__heart" id="bpm-heart" viewBox="0 0 24 24"><path d="{{ HEART }}" fill="currentColor"/></svg>
+                    <span>Your heart at this rate</span>
+                  </div>
+                  <p class="field__error" role="alert"></p>
+                </div>
+
+                <fieldset class="field" data-field="ExerciseAngina">
+                  <legend class="field__label">Did exercise bring on chest pain?</legend>
+                  <div class="choices choices--2">
+                    <label class="choice"><input type="radio" name="ExerciseAngina" value="Y"><span class="choice__body"><span class="choice__name">Yes</span></span></label>
+                    <label class="choice"><input type="radio" name="ExerciseAngina" value="N"><span class="choice__body"><span class="choice__name">No</span></span></label>
+                  </div>
+                  <p class="field__error" role="alert"></p>
+                </fieldset>
+
+                <div class="field" data-field="Oldpeak">
+                  <label class="field__label" for="Oldpeak">ST depression (Oldpeak)</label>
+                  <p class="field__hint">How far the ECG line dipped during exercise compared with rest. It is printed on stress-test reports.</p>
+                  <div class="range">
+                    <input class="range__slider" type="range" min="0" max="6" step="0.1" value="0" data-pair="Oldpeak" aria-label="ST depression slider">
+                    <span class="range__box"><input id="Oldpeak" name="Oldpeak" type="number" min="-3" max="8" step="0.1" value="0" inputmode="decimal"><span class="range__unit">mm</span></span>
+                  </div>
+                  <p class="field__error" role="alert"></p>
+                </div>
+
+                <fieldset class="field" data-field="ST_Slope">
+                  <legend class="field__label">Slope of the ST segment at peak exercise</legend>
+                  <div class="choices choices--3 choices--tight">
+                    <label class="choice"><input type="radio" name="ST_Slope" value="Up"><span class="choice__body"><svg class="glyph" viewBox="0 0 36 24" aria-hidden="true"><path d="M2 20 H10 L34 6"/></svg><span class="choice__name">Upsloping</span></span></label>
+                    <label class="choice"><input type="radio" name="ST_Slope" value="Flat"><span class="choice__body"><svg class="glyph" viewBox="0 0 36 24" aria-hidden="true"><path d="M2 14 H34"/></svg><span class="choice__name">Flat</span></span></label>
+                    <label class="choice"><input type="radio" name="ST_Slope" value="Down"><span class="choice__body"><svg class="glyph" viewBox="0 0 36 24" aria-hidden="true"><path d="M2 6 H10 L34 20"/></svg><span class="choice__name">Downsloping</span></span></label>
+                  </div>
+                  <p class="field__error" role="alert"></p>
+                </fieldset>
+              </fieldset>
+
+              <p class="form-error" id="form-error" role="alert" hidden></p>
+
+              <div class="sheet__nav">
+                <button type="button" class="btn btn--ghost" id="btn-back" hidden>Back</button>
+                <button type="submit" class="btn btn--primary" id="btn-next">Continue</button>
+              </div>
+            </form>
+
+            <!-- Loading -->
+            <div class="loading" id="loading" hidden aria-live="polite">
+              <svg class="loading__ecg" viewBox="0 0 200 120" aria-hidden="true">
+                <path class="loading__ghost" d="{{ BEAT }}"/>
+                <path class="loading__line" pathLength="1" d="{{ BEAT }}"/>
+              </svg>
+              <p>Comparing you with {{ info.records }} patient records</p>
+            </div>
+
+            <!-- Result -->
+            <div class="result" id="result" hidden tabindex="-1">
+              <div class="result__top">
+                <div class="result__copy">
+                  <div class="result__head">
+                    <h3 class="result__title" id="result-title"></h3>
+                    <svg class="result__ecg" viewBox="0 0 200 120" aria-hidden="true"><path pathLength="1" d="{{ BEAT }}"/></svg>
+                  </div>
+                  <p class="result__lead" id="result-lead"></p>
+                </div>
+                <div class="dots-wrap">
+                  <div class="dots" id="dots" role="img"></div>
+                  <p class="dots__key" aria-hidden="true">
+                    <span><svg viewBox="0 0 24 24" class="dot dot--yes dot--key"><path d="{{ HEART }}"/></svg> Had heart disease</span>
+                    <span><svg viewBox="0 0 24 24" class="dot dot--no dot--key"><path d="{{ HEART }}"/></svg> Did not</span>
+                  </p>
+                </div>
+              </div>
+
+              <p class="result__note" id="result-note" hidden></p>
+
+              <div class="result__next" id="result-next"></div>
+
+              <section class="similar" aria-labelledby="similar-title">
+                <h4 id="similar-title">How patients with your answers turned out</h4>
+                <p class="similar__sub">Each bar looks at one answer on its own. The tick marks the overall rate in the dataset, <span id="base-rate"></span>.</p>
+                <ul class="similar__list" id="similar-list"></ul>
+              </section>
+
+              <div class="sheet__nav">
+                <button type="button" class="btn btn--ghost" id="btn-edit">Change my answers</button>
+                <button type="button" class="btn btn--primary" id="btn-restart">Start over</button>
+              </div>
+              <p class="result__disclaimer">This is an educational project, not a medical diagnosis. It cannot rule heart disease in or out.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────── Healthy habits ───────────── -->
+    <section class="habits" id="habits">
+      <div class="wrap habits__inner">
+        <div class="habits__art">
+          <img src="{{ url_for('static', filename='img/heart-veggies.webp') }}" width="506" height="900" loading="lazy" alt="A heart shaped from broccoli, peppers, carrots, cauliflower and other vegetables">
+        </div>
+        <div class="habits__copy">
+          <h2 class="section-title">What helps your heart</h2>
+          <p class="section-sub">Small habits, kept up for years, count for more than any single test result.</p>
+          <dl class="habits__list">
+            <div><dt>Eat more plants</dt><dd>Fill your plate with vegetables, fruit, whole grains, beans and nuts. Go easy on salt, sugary drinks and processed meat.</dd></div>
+            <div><dt>Move most days</dt><dd>Aim for about 150 minutes of brisk walking, cycling or similar activity each week.</dd></div>
+            <div><dt>Sleep and unwind</dt><dd>Most adults need seven to nine hours of sleep. Poor sleep and constant stress both push blood pressure up.</dd></div>
+            <div><dt>Know your numbers</dt><dd>High blood pressure, cholesterol and blood sugar rarely cause symptoms, so measure them regularly. If you smoke, quitting is the biggest single change you can make.</dd></div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────── The model ───────────── -->
+    <section class="model" id="model">
+      <div class="wrap model__inner">
+        <div class="model__art">
+          <img src="{{ url_for('static', filename='img/heart-network.webp') }}" width="649" height="350" loading="lazy" alt="Three-dimensional heart with glowing blood vessels on a dark background">
+        </div>
+        <div class="model__copy">
+          <h2 class="section-title">How the model works</h2>
+          <p>The model is a k-nearest-neighbours classifier. To score you, it finds the {{ info.neighbors }} patients in the dataset whose answers are closest to yours and counts how many of them had heart disease.</p>
+          <p>It learned from {{ info.records }} patients, {{ info.with_disease }} of whom had heart disease. These scores come from patients the model had not seen while it was being fitted:</p>
+          <dl class="stats">
+            <div><dt>of patients classified correctly</dt><dd>{{ (metrics.accuracy * 100)|round|int }}%</dd></div>
+            <div><dt>of people with heart disease flagged</dt><dd>{{ (metrics.sensitivity * 100)|round|int }}%</dd></div>
+            <div><dt>of people without it cleared</dt><dd>{{ (metrics.specificity * 100)|round|int }}%</dd></div>
+          </dl>
+          <p>It has limits. It only knows the {{ info.features }} things it asks about, so family history, smoking and medication are missing. The records come from a small number of hospitals. Treat the result as a conversation starter for your doctor.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap site-footer__inner">
+      <a class="brand brand--foot" href="#top">
+        <svg class="brand__mark" viewBox="0 0 24 24" aria-hidden="true"><path d="{{ HEART }}" fill="currentColor"/><path d="M4.5 12.4h4l1.6-3.4 2.4 6 1.6-2.6h5.4" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Heartline</span>
+      </a>
+      <p>Heartline is an educational machine-learning project. It does not diagnose, treat or replace advice from a qualified doctor. In an emergency, call your local emergency number.</p>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</body>
+</html>
